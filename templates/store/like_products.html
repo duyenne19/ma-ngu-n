@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+
+<div class="container py-5">
+
+
+    <div class="row">
+
+
+
+        <div class="col-lg-12">
+            <div class="card mb-4" id="tables">
+                <div class="card-header text-center">Sản phẩm ưu thích</div>
+                {% include 'partials/_messages.html' %}
+                <div class="card-body">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Sản phẩm</th>
+                                <th>Hình ảnh</th>
+                                <th>Giá</th>
+                                <th>Danh mục</th>
+                                <th> </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% if favorites %}
+
+                            {% for favorite in favorites %}
+                            <tr>
+                                <td>{{forloop.counter}}</td>       
+                                <td><a href="{% url 'store:product-detail' favorite.product.slug %}">{{favorite.product.title}}</a></td>
+                                <td>
+                                    {% if favorite.product.product_image %}
+                                    <a href="{% url 'store:product-detail' favorite.product.slug %}">
+                                    <img  src="{{favorite.product.product_image.url}}" alt="{{favorite.product.product_title}}"
+                                        style="width:150px;">
+                                    </a>
+                                    {% endif %}
+                                </td>
+                                <td>{{favorite.product.price}}đ</td>
+                                <td>{{favorite.product.category}}</td>
+                                <td class=" border-0"><a class="reset-anchor" href="{% url 'store:remove-like' favorite.id %}"><i class="fas fa-trash-alt small text-muted" ></i></a></td>
+                            </tr>
+                            {% endfor %}
+                            {% endif %}
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+</div>
+{% endblock content %}
