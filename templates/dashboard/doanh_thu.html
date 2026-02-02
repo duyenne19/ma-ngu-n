@@ -1,0 +1,231 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+
+{% block title %}Báo Cáo Doanh Thu{% endblock %}
+{% block page_title %}Báo Cáo Doanh Thu{% endblock %}
+{% block page_subtitle %}Phân tích doanh thu chi tiết theo thời gian{% endblock %}
+
+{% block content %}
+<!-- Filter Form -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Từ ngày</label>
+                        <input type="date" class="form-control" name="tu_ngay" 
+                               value="{{ ngay_bat_dau|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Đến ngày</label>
+                        <input type="date" class="form-control" name="den_ngay" 
+                               value="{{ ngay_ket_thuc|date:'Y-m-d' }}">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Xem báo cáo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Summary -->
+<div class="row">
+    <div class="col-lg-3 col-md-6">
+        <div class="kpi-card revenue">
+            <div class="icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h6>Tổng doanh thu</h6>
+            <h3>{{ tong_hop.tong_doanh_thu|default:0|floatformat:0|intcomma }} đ</h3>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="kpi-card orders">
+            <div class="icon">
+                <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h6>Tổng đơn hàng</h6>
+            <h3>{{ tong_hop.tong_don_hang|default:0 }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="kpi-card products">
+            <div class="icon">
+                <i class="fas fa-box"></i>
+            </div>
+            <h6>Sản phẩm bán ra</h6>
+            <h3>{{ tong_hop.tong_san_pham|default:0 }}</h3>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="kpi-card customers">
+            <div class="icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <h6>Giá trị TB đơn hàng</h6>
+            <h3>{{ tong_hop.gia_tri_tb|default:0|floatformat:0|intcomma }} đ</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Doanh thu theo ngày -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="chart-container">
+            <h5><i class="fas fa-chart-area"></i> Biểu đồ doanh thu theo ngày</h5>
+            <canvas id="doanhThuNgayChart" height="80"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Doanh thu theo tháng -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="chart-container">
+            <h5><i class="fas fa-chart-bar"></i> Doanh thu theo tháng (12 tháng gần nhất)</h5>
+            <canvas id="doanhThuThangChart" height="80"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Data Table -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="table-container">
+            <h5><i class="fas fa-table"></i> Chi tiết doanh thu theo ngày</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ngày</th>
+                            <th class="text-end">Doanh thu</th>
+                            <th class="text-end">Số đơn</th>
+                            <th class="text-end">SP bán</th>
+                            <th class="text-end">Giá trị TB</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in bao_cao_theo_ngay %}
+                        <tr>
+                            <td><strong>{{ item.ngay|date:"d/m/Y" }}</strong></td>
+                            <td class="text-end">{{ item.doanh_thu|floatformat:0|intcomma }} đ</td>
+                            <td class="text-end">{{ item.so_don_hang }}</td>
+                            <td class="text-end">{{ item.so_san_pham_ban }}</td>
+                            <td class="text-end">{{ item.gia_tri_trung_binh|floatformat:0|intcomma }} đ</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Chưa có dữ liệu trong khoảng thời gian này</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Chart doanh thu theo ngày
+const ngayData = [
+    {% for item in bao_cao_theo_ngay %}
+    {
+        ngay: '{{ item.ngay|date:"d/m" }}',
+        doanhthu: {{ item.doanh_thu|default:0 }},
+        sodon: {{ item.so_don_hang }}
+    },
+    {% endfor %}
+];
+
+const ctxNgay = document.getElementById('doanhThuNgayChart').getContext('2d');
+new Chart(ctxNgay, {
+    type: 'line',
+    data: {
+        labels: ngayData.map(d => d.ngay),
+        datasets: [{
+            label: 'Doanh thu',
+            data: ngayData.map(d => d.doanhthu),
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.4,
+            fill: true,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Doanh thu: ' + context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                ticks: {
+                    callback: function(value) {
+                        return (value / 1000000).toFixed(1) + 'M';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Chart doanh thu theo tháng
+const thangData = {{ doanh_thu_thang|safe }};
+const thangLabels = thangData.map(item => {
+    const date = new Date(item.thang);
+    return `${date.getMonth() + 1}/${date.getFullYear()}`;
+});
+const thangValues = thangData.map(item => item.doanh_thu);
+
+const ctxThang = document.getElementById('doanhThuThangChart').getContext('2d');
+new Chart(ctxThang, {
+    type: 'bar',
+    data: {
+        labels: thangLabels,
+        datasets: [{
+            label: 'Doanh thu tháng',
+            data: thangValues,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Doanh thu: ' + context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                ticks: {
+                    callback: function(value) {
+                        return (value / 1000000).toFixed(0) + 'M';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

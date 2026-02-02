@@ -102,6 +102,16 @@
               <a class="dropdown-item border-0 transition-link" href="{% url 'store:purchase-orders' %}">Đơn đã mua</a>
               <a class="dropdown-item border-0 transition-link" href="{% url 'store:password-change' %}">Đổi mật khẩu</a>
 
+              {% if user.is_staff %}
+              <hr>
+              <a class="dropdown-item border-0 transition-link" href="{% url 'store:dashboard-home' %}">
+                <i class="fas fa-chart-line mr-1"></i>Dashboard Báo Cáo
+              </a>
+              <a class="dropdown-item border-0 transition-link" href="/admin/">
+                <i class="fas fa-cog mr-1"></i>Quản trị Admin
+              </a>
+              {% endif %}
+
               <hr>
               <a class="dropdown-item border-0 transition-link" href="{% url 'store:logout' %}">Đăng xuất</a>
 

@@ -1,0 +1,299 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+
+{% block title %}Báo Cáo Voucher{% endblock %}
+{% block page_title %}Báo Cáo Hiệu Quả Voucher{% endblock %}
+{% block page_subtitle %}Phân tích ROI và hiệu suất mã giảm giá{% endblock %}
+
+{% block content %}
+<!-- Active Vouchers -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="table-container">
+            <h5><i class="fas fa-ticket-alt"></i> Mã giảm giá đang hoạt động</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã giảm giá</th>
+                            <th>Loại</th>
+                            <th class="text-end">Giá trị giảm</th>
+                            <th class="text-end">Tổng số</th>
+                            <th class="text-end">Đã dùng</th>
+                            <th class="text-end">Tỷ lệ sử dụng</th>
+                            <th class="text-end">Còn lại</th>
+                            <th>Ngày hết hạn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for voucher in voucher_active %}
+                        <tr>
+                            <td><strong><code>{{ voucher.ma }}</code></strong></td>
+                            <td>
+                                {% if voucher.loai_giam_gia == 'percent' %}
+                                <span class="badge bg-primary">Phần trăm</span>
+                                {% else %}
+                                <span class="badge bg-success">Cố định</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if voucher.loai_giam_gia == 'percent' %}
+                                {{ voucher.gia_tri_giam }}%
+                                {% else %}
+                                {{ voucher.gia_tri_giam|floatformat:0|intcomma }} đ
+                                {% endif %}
+                            </td>
+                            <td class="text-end">{{ voucher.so_luong }}</td>
+                            <td class="text-end"><strong class="text-success">{{ voucher.da_su_dung }}</strong></td>
+                            <td class="text-end">
+                                {% widthratio voucher.da_su_dung voucher.so_luong 100 as usage_percent %}
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar 
+                                        {% if usage_percent >= 80 %}bg-success
+                                        {% elif usage_percent >= 50 %}bg-warning
+                                        {% else %}bg-danger
+                                        {% endif %}" 
+                                        role="progressbar" 
+                                        style="width: {{ usage_percent }}%;">
+                                        {{ usage_percent }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end">{{ voucher.so_luong|add:"-"|add:voucher.da_su_dung }}</td>
+                            <td>{{ voucher.ngay_ket_thuc|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">Không có voucher đang hoạt động</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top ROI Vouchers -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="table-container">
+            <h5><i class="fas fa-trophy text-warning"></i> Top 10 Voucher ROI cao nhất</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã giảm giá</th>
+                            <th>Tháng</th>
+                            <th class="text-end">ROI (%)</th>
+                            <th class="text-end">Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tk in top_voucher_roi %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td><code>{{ tk.ma_giam_gia.ma }}</code></td>
+                            <td>{{ tk.thang|date:"m/Y" }}</td>
+                            <td class="text-end">
+                                <span class="badge bg-success">{{ tk.roi|floatformat:1 }}%</span>
+                            </td>
+                            <td class="text-end">{{ tk.doanh_thu_tao_ra|floatformat:0|intcomma }} đ</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Chưa có dữ liệu</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Low Performance Vouchers -->
+    <div class="col-lg-6">
+        <div class="table-container">
+            <h5><i class="fas fa-exclamation-circle text-danger"></i> Top 10 Voucher hiệu quả thấp</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã giảm giá</th>
+                            <th>Tháng</th>
+                            <th class="text-end">ROI (%)</th>
+                            <th class="text-end">Chi phí</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tk in voucher_hieu_qua_thap %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td><code>{{ tk.ma_giam_gia.ma }}</code></td>
+                            <td>{{ tk.thang|date:"m/Y" }}</td>
+                            <td class="text-end">
+                                <span class="badge bg-danger">{{ tk.roi|floatformat:1 }}%</span>
+                            </td>
+                            <td class="text-end">{{ tk.chi_phi_giam_gia|floatformat:0|intcomma }} đ</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-success">Tất cả voucher đều hiệu quả tốt</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Statistics -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="table-container">
+            <h5><i class="fas fa-chart-bar"></i> Thống kê chi tiết voucher (30 bản ghi gần nhất)</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã giảm giá</th>
+                            <th>Tháng</th>
+                            <th class="text-end">Số lần dùng</th>
+                            <th class="text-end">Chi phí giảm giá</th>
+                            <th class="text-end">Doanh thu tạo ra</th>
+                            <th class="text-end">Lợi nhuận</th>
+                            <th class="text-end">ROI (%)</th>
+                            <th class="text-center">Đánh giá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tk in thong_ke_voucher %}
+                        <tr>
+                            <td><strong><code>{{ tk.ma_giam_gia.ma }}</code></strong></td>
+                            <td>{{ tk.thang|date:"m/Y" }}</td>
+                            <td class="text-end">{{ tk.so_lan_su_dung }}</td>
+                            <td class="text-end text-danger">
+                                -{{ tk.chi_phi_giam_gia|floatformat:0|intcomma }} đ
+                            </td>
+                            <td class="text-end text-success">
+                                {{ tk.doanh_thu_tao_ra|floatformat:0|intcomma }} đ
+                            </td>
+                            <td class="text-end">
+                                {% if tk.loi_nhuan >= 0 %}
+                                <span class="text-success">+{{ tk.loi_nhuan|floatformat:0|intcomma }} đ</span>
+                                {% else %}
+                                <span class="text-danger">{{ tk.loi_nhuan|floatformat:0|intcomma }} đ</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if tk.roi >= 200 %}
+                                <span class="badge bg-success">{{ tk.roi|floatformat:1 }}%</span>
+                                {% elif tk.roi >= 100 %}
+                                <span class="badge bg-info">{{ tk.roi|floatformat:1 }}%</span>
+                                {% elif tk.roi >= 50 %}
+                                <span class="badge bg-warning">{{ tk.roi|floatformat:1 }}%</span>
+                                {% else %}
+                                <span class="badge bg-danger">{{ tk.roi|floatformat:1 }}%</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                {% if tk.roi >= 200 %}
+                                <i class="fas fa-star text-warning" title="Xuất sắc"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                {% elif tk.roi >= 100 %}
+                                <i class="fas fa-star text-warning" title="Tốt"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                {% elif tk.roi >= 50 %}
+                                <i class="fas fa-star text-warning" title="Trung bình"></i>
+                                {% else %}
+                                <i class="far fa-star text-muted" title="Kém"></i>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">Chưa có dữ liệu thống kê</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ROI Chart -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="chart-container">
+            <h5><i class="fas fa-chart-line"></i> Xu hướng ROI theo tháng</h5>
+            <canvas id="roiChart" height="80"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ROI Chart
+const roiData = {{ thong_ke_voucher|safe }};
+
+// Group by month and calculate average ROI
+const roiByMonth = {};
+roiData.forEach(item => {
+    const date = new Date(item.thang);
+    const monthKey = `${date.getMonth() + 1}/${date.getFullYear()}`;
+    
+    if (!roiByMonth[monthKey]) {
+        roiByMonth[monthKey] = { total: 0, count: 0 };
+    }
+    roiByMonth[monthKey].total += item.roi;
+    roiByMonth[monthKey].count += 1;
+});
+
+const roiLabels = Object.keys(roiByMonth);
+const roiValues = roiLabels.map(key => roiByMonth[key].total / roiByMonth[key].count);
+
+const ctxRoi = document.getElementById('roiChart').getContext('2d');
+new Chart(ctxRoi, {
+    type: 'line',
+    data: {
+        labels: roiLabels,
+        datasets: [{
+            label: 'ROI Trung bình (%)',
+            data: roiValues,
+            borderColor: 'rgb(75, 192, 192)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            tension: 0.4,
+            fill: true,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'ROI TB: ' + context.parsed.y.toFixed(1) + '%';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return value + '%';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -29,6 +29,19 @@ urlpatterns = [
     path('invoice/', views.invoice, name="invoice"),
     path('like-products/', views.like_products, name="like-products"),
     path('remove-like/<int:favorite_id>/', views.remove_like, name="remove-like"),
+    
+    # ==================== DASHBOARD BÁO CÁO & THỐNG KÊ ====================
+    path('dashboard/', views.dashboard_home, name="dashboard-home"),
+    path('dashboard/doanh-thu/', views.dashboard_doanh_thu, name="dashboard-doanh-thu"),
+    path('dashboard/san-pham/', views.dashboard_san_pham, name="dashboard-san-pham"),
+    path('dashboard/khach-hang/', views.dashboard_khach_hang, name="dashboard-khach-hang"),
+    path('dashboard/voucher/', views.dashboard_voucher, name="dashboard-voucher"),
+    
+    # API endpoints cho charts
+    path('api/doanh-thu-chart/', views.api_doanh_thu_chart, name="api-doanh-thu-chart"),
+    path('api/top-san-pham/', views.api_top_san_pham, name="api-top-san-pham"),
+    path('api/phan-khuc-khach-hang/', views.api_phan_khuc_khach_hang, name="api-phan-khuc-khach-hang"),
+    
     #URL for Products
     path('product/<slug:slug>/', views.detail, name="product-detail"),
     path('categories/', views.all_categories, name="all-categories"),
@@ -53,6 +66,5 @@ urlpatterns = [
     path('accounts/password-reset-complete/', auth_views.PasswordResetCompleteView.as_view(template_name='account/password_reset_complete.html'), name="password_reset_complete"),
 
     path('product/test/', views.test, name="test"),
-
     
 ]

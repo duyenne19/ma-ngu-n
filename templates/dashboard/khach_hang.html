@@ -1,0 +1,270 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+
+{% block title %}Phân Tích Khách Hàng{% endblock %}
+{% block page_title %}Phân Tích Khách Hàng{% endblock %}
+{% block page_subtitle %}Phân khúc RFM và phân tích hành vi khách hàng{% endblock %}
+
+{% block content %}
+<!-- Segment Statistics -->
+<div class="row">
+    {% for segment in segment_stats %}
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="kpi-card">
+            <div class="icon" style="background: 
+                {% if segment.segment == 'vip' %}linear-gradient(135deg, #FFD700 0%, #FFA500 100%)
+                {% elif segment.segment == 'loyal' %}linear-gradient(135deg, #3498db 0%, #2980b9 100%)
+                {% elif segment.segment == 'at_risk' %}linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)
+                {% elif segment.segment == 'new' %}linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)
+                {% else %}linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)
+                {% endif %};">
+                <i class="fas fa-users"></i>
+            </div>
+            <h6>
+                {% if segment.segment == 'vip' %}VIP
+                {% elif segment.segment == 'loyal' %}Trung thành
+                {% elif segment.segment == 'at_risk' %}Nguy cơ rời bỏ
+                {% elif segment.segment == 'lost' %}Đã mất
+                {% elif segment.segment == 'new' %}Mới
+                {% elif segment.segment == 'regular' %}Thường xuyên
+                {% elif segment.segment == 'promising' %}Tiềm năng
+                {% elif segment.segment == 'need_attention' %}Cần chăm sóc
+                {% else %}{{ segment.segment }}
+                {% endif %}
+            </h6>
+            <h3>{{ segment.so_luong }}</h3>
+            <small class="text-muted">{{ segment.tong_chi_tieu|floatformat:0|intcomma }} đ</small>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Chart -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="chart-container">
+            <h5><i class="fas fa-chart-pie"></i> Phân bố phân khúc khách hàng</h5>
+            <canvas id="segmentChart" height="200"></canvas>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="chart-container">
+            <h5><i class="fas fa-chart-bar"></i> Chi tiêu trung bình theo phân khúc</h5>
+            <canvas id="chiTieuChart" height="200"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Top Customers -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="table-container">
+            <h5><i class="fas fa-crown text-warning"></i> Top 20 khách hàng VIP & Trung thành</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên khách hàng</th>
+                            <th>Email</th>
+                            <th>Phân khúc</th>
+                            <th class="text-end">Tổng chi tiêu</th>
+                            <th class="text-end">Số đơn hàng</th>
+                            <th class="text-end">Lần mua cuối</th>
+                            <th class="text-center">RFM Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kh in top_khach_hang %}
+                        <tr>
+                            <td><strong>{{ forloop.counter }}</strong></td>
+                            <td>{{ kh.nguoi_dung.get_full_name|default:kh.nguoi_dung.username }}</td>
+                            <td>{{ kh.nguoi_dung.email }}</td>
+                            <td>
+                                <span class="badge-segment segment-{{ kh.segment }}">
+                                    {% if kh.segment == 'vip' %}VIP
+                                    {% elif kh.segment == 'loyal' %}Trung thành
+                                    {% else %}{{ kh.segment }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="text-end"><strong>{{ kh.tong_chi_tieu|floatformat:0|intcomma }} đ</strong></td>
+                            <td class="text-end">{{ kh.so_don_hang }}</td>
+                            <td class="text-end">{{ kh.ngay_mua_cuoi|date:"d/m/Y" }}</td>
+                            <td class="text-center">
+                                <code>{{ kh.rfm_score_r }}{{ kh.rfm_score_f }}{{ kh.rfm_score_m }}</code>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">Chưa có dữ liệu</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- At Risk Customers -->
+<div class="row mt-4">
+    <div class="col-lg-12">
+        <div class="table-container">
+            <h5><i class="fas fa-exclamation-triangle text-danger"></i> Khách hàng nguy cơ rời bỏ - Cần chăm sóc</h5>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>STT</th>
+                            <th>Tên khách hàng</th>
+                            <th>Email</th>
+                            <th>Phân khúc</th>
+                            <th class="text-end">Tổng chi tiêu</th>
+                            <th class="text-end">Số ngày không mua</th>
+                            <th class="text-end">Lần mua cuối</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for kh in khach_hang_at_risk %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ kh.nguoi_dung.get_full_name|default:kh.nguoi_dung.username }}</td>
+                            <td>{{ kh.nguoi_dung.email }}</td>
+                            <td>
+                                <span class="badge-segment segment-{{ kh.segment }}">
+                                    {% if kh.segment == 'at_risk' %}Nguy cơ rời bỏ
+                                    {% elif kh.segment == 'need_attention' %}Cần chăm sóc
+                                    {% else %}{{ kh.segment }}
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="text-end">{{ kh.tong_chi_tieu|floatformat:0|intcomma }} đ</td>
+                            <td class="text-end">
+                                <span class="badge bg-warning">{{ kh.so_ngay_khong_mua }} ngày</span>
+                            </td>
+                            <td class="text-end">{{ kh.ngay_mua_cuoi|date:"d/m/Y" }}</td>
+                            <td class="text-center">
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-envelope"></i> Gửi Email
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center text-success">Không có khách hàng nguy cơ rời bỏ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Phân bố phân khúc
+const segmentData = {{ segment_stats|safe }};
+const segmentNames = {
+    'vip': 'VIP',
+    'loyal': 'Trung thành',
+    'at_risk': 'Nguy cơ rời bỏ',
+    'lost': 'Đã mất',
+    'new': 'Mới',
+    'regular': 'Thường xuyên',
+    'promising': 'Tiềm năng',
+    'need_attention': 'Cần chăm sóc'
+};
+
+const segmentLabels = segmentData.map(d => segmentNames[d.segment] || d.segment);
+const segmentValues = segmentData.map(d => d.so_luong);
+
+const ctxSegment = document.getElementById('segmentChart').getContext('2d');
+new Chart(ctxSegment, {
+    type: 'doughnut',
+    data: {
+        labels: segmentLabels,
+        datasets: [{
+            data: segmentValues,
+            backgroundColor: [
+                '#FFD700',
+                '#3498db',
+                '#e74c3c',
+                '#c0392b',
+                '#2ecc71',
+                '#95a5a6',
+                '#1abc9c',
+                '#f39c12'
+            ],
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return label + ': ' + value + ' KH (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Chi tiêu trung bình
+const chiTieuLabels = segmentData.map(d => segmentNames[d.segment] || d.segment);
+const chiTieuValues = segmentData.map(d => d.trung_binh_chi_tieu);
+
+const ctxChiTieu = document.getElementById('chiTieuChart').getContext('2d');
+new Chart(ctxChiTieu, {
+    type: 'bar',
+    data: {
+        labels: chiTieuLabels,
+        datasets: [{
+            label: 'Chi tiêu TB',
+            data: chiTieuValues,
+            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Chi tiêu TB: ' + context.parsed.y.toLocaleString('vi-VN') + ' đ';
+                    }
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: function(value) {
+                        return (value / 1000000).toFixed(1) + 'M';
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
