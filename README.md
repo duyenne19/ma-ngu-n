@@ -32,7 +32,7 @@ Dưới đây là một số ảnh demo của trang web bán hàng này
 ### Cách cài đặt
 1. Clone từ git hub theo đường link
    ```
-   git clone https://github.com/leminhdung2701/tiki-shop-main
+   git clone https://github.com/duyenne19/ma-ngu-n.git
    ```
 2. Chạy chương trình 
    
@@ -67,11 +67,12 @@ Dưới đây là một số ảnh demo của trang web bán hàng này
 
 ## Thành viên
 
-* Lê Minh Dũng - Nhóm trưởng - leminhdung_t64@hus.edu.vn
-* Tăng Thế Duy -  tangtheduy_t64@hus.edu.vn
-* Trần Khánh Duy -  trankhanhduy_t64@hus.edu.vn
+* Lê Thị Mỹ Duyên - Nhóm trưởng 
+* Vũ Thanh Hiền 
+* Vũ Thùy Dương
+* Thảo
 
-Project Link: [https://github.com/leminhdung2701/tiki-shop-main](https://github.com/leminhdung2701/tiki-shop-main)
+Project Link: [https://github.com/duyenne19/ma-ngu-n.git)
 
 ## Chức năng của trang web
 * Xem sản phẩm theo độ phổ biến, danh mục, xem gần đây
