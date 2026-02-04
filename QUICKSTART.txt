@@ -1,0 +1,83 @@
+╔════════════════════════════════════════════════════════════╗
+║         TikiShop - Quick Start Guide (5 phút)              ║
+╚════════════════════════════════════════════════════════════╝
+
+📝 BƯỚC 1: CLONE REPOSITORY
+─────────────────────────────
+git clone https://github.com/duyenne19/ma-ngu-n.git
+cd ma-ngu-n/ma-ngu-n
+
+🏃 BƯỚC 2: CHẠY SETUP (tự động)
+────────────────────────────────
+Windows (PowerShell):
+  .\setup.ps1
+
+macOS/Linux:
+  chmod +x setup.sh
+  ./setup.sh
+
+📦 BƯỚC 3: TẠO SUPERUSER
+────────────────────────
+python manage.py createsuperuser
+(Nhập username: admin, password: admin123)
+
+🚀 BƯỚC 4: KHỞI ĐỘNG SERVER
+────────────────────────────
+python manage.py runserver
+
+✅ BƯỚC 5: TRUY CẬP
+───────────────────
+Trang chủ:     http://127.0.0.1:8000/
+Admin Panel:   http://127.0.0.1:8000/admin/
+Dashboard:     http://127.0.0.1:8000/dashboard/
+
+═════════════════════════════════════════════════════════════
+
+🔧 CÀI ĐẶT THỦ CÔNG (nếu setup script không chạy được)
+─────────────────────────────────────────────────────────
+
+1. Tạo virtual environment:
+   python -m venv .venv
+   .venv\Scripts\activate  (Windows)
+   source .venv/bin/activate  (macOS/Linux)
+
+2. Cài dependencies:
+   pip install -r requirements.txt
+
+3. Chạy migrations:
+   python manage.py migrate
+
+4. Tạo admin user:
+   python manage.py createsuperuser
+
+5. Khởi động:
+   python manage.py runserver
+
+═════════════════════════════════════════════════════════════
+
+❓ GẶP SỰ CỐ?
+─────────────
+
+❌ ModuleNotFoundError: No module named 'django'
+   → pip install -r requirements.txt
+
+❌ No such table error
+   → python manage.py migrate
+
+❌ Port 8000 đang dùng
+   → python manage.py runserver 8001
+
+❌ Lỗi database
+   → rm db.sqlite3
+   → python manage.py migrate
+   → python manage.py createsuperuser
+
+═════════════════════════════════════════════════════════════
+
+📖 ĐỌC THÊM
+───────────
+- Chi tiết setup: SETUP_GUIDE.md
+- Tính năng: README.md
+- Models database: store/models.py
+
+═════════════════════════════════════════════════════════════
