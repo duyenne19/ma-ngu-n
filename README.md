@@ -196,6 +196,7 @@ Xem [SETUP_GUIDE.md](SETUP_GUIDE.md#-xử-lý-sự-cố) để xử lý lỗi ch
 - **Lê Thị Mỹ Duyên** - Nhóm trưởng
 - **Vũ Thanh Hiền**
 - **Vũ Thùy Dương**
+- ** Nguyễn Thị Bích Thảo**
 
 ---
 
