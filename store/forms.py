@@ -1,5 +1,5 @@
 from django.contrib.auth import password_validation
-from store.models import Address
+from store.models import DiaChi, SanPham, DanhGia, Profile
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UsernameField, PasswordChangeForm, PasswordResetForm, SetPasswordForm
@@ -8,7 +8,6 @@ from django.db.models import fields
 from django.forms import widgets
 from django.forms.fields import CharField
 from django.utils.translation import gettext, gettext_lazy as _
-from . models import Product, Comment,Profile, ProductReview
 
 
 class RegistrationForm(UserCreationForm):
@@ -30,9 +29,16 @@ class LoginForm(AuthenticationForm):
 
 class AddressForm(forms.ModelForm):
     class Meta:
-        model = Address
-        fields = ['locality', 'city', 'state']
-        widgets = {'locality':forms.TextInput(attrs={'class':'form-control', 'placeholder':'Ngõ 69B, đường 169 Nguyễn Trãi, Thanh Xuân'}), 'city':forms.TextInput(attrs={'class':'form-control', 'placeholder':'Quận/Huyện'}), 'state':forms.TextInput(attrs={'class':'form-control', 'placeholder':'Thành Phố/Tỉnh'})}
+        model = DiaChi
+        fields = ['ten_nguoi_nhan', 'so_dien_thoai', 'dia_chi_chi_tiet', 'tinh_thanh', 'quan_huyen', 'phuong_xa', 'mac_dinh']
+        widgets = {
+            'ten_nguoi_nhan': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Tên người nhận'}),
+            'so_dien_thoai': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Số điện thoại'}),
+            'dia_chi_chi_tiet': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Ngõ 69B, đường 169 Nguyễn Trãi'}),
+            'quan_huyen': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Quận/Huyện'}),
+            'phuong_xa': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Phường/Xã'}),
+            'tinh_thanh': forms.TextInput(attrs={'class':'form-control', 'placeholder':'Thành Phố/Tỉnh'}),
+        }
 
 
 class PasswordChangeForm(PasswordChangeForm):
@@ -57,7 +63,7 @@ class CommentForm(forms.ModelForm):
     }))
 
     class Meta:
-        model = Comment
+        model = DanhGia
         fields = ['content']
         
 class ProfileForm(forms.ModelForm):
@@ -73,6 +79,6 @@ class RatingForm(forms.ModelForm):
         'rows': '4',
     }))
     class Meta:
-        model = ProductReview
-        fields=('review_text','review_rating')
+        model = DanhGia
+        fields=('review_text','so_sao')
    

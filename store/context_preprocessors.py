@@ -1,10 +1,10 @@
 from operator import le
-from .models import Category, Cart, Notification
+from .models import DanhMuc, GioHang, ChiTietGioHang, ThongBao
 
 
 
 def store_menu(request):
-    categories = Category.objects.filter(is_active=True)
+    categories = DanhMuc.objects.filter(hien_thi=True)
     context = {
         'categories_menu': categories,
     }
@@ -13,7 +13,7 @@ def store_menu(request):
 def notification_list(request):    
     if request.user.is_authenticated:
         user = request.user
-        notification = Notification.objects.filter(user=user)
+        notification = ThongBao.objects.filter(nguoi_dung=user)
         t=1
         if len(notification)==0: t=0
         if len(notification)>=6:
@@ -34,9 +34,12 @@ def notification_list(request):
 
 def cart_menu(request):
     if request.user.is_authenticated:
-        cart_items= Cart.objects.filter(user=request.user)
+        # Lấy hoặc tạo giỏ hàng
+        gio_hang, created = GioHang.objects.get_or_create(nguoi_dung=request.user)
+        cart_items = gio_hang.chi_tiet.all()
         context = {
             'cart_items': cart_items,
+            'gio_hang': gio_hang,
         }
     else:
         context = {}
